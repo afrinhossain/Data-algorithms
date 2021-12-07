@@ -1,0 +1,45 @@
+abstract class Bolt(name: String) {
+  /**
+   * Compare this bolt to a nut.
+   * Returns -1 if this bolt is smaller than, 0 if the same size as,
+   * and 1 if larger than the nut.
+   */
+  def compare(nut: Nut): Int = -nut.compare(this)
+}
+
+abstract class Nut(name: String) {
+  /**
+   * Compare this nut to a bolt.
+   * Returns -1 if this nut is smaller than, 0 if the same size as,
+   * and 1 if larger than the bolt.
+   */
+  def compare(bolt: Bolt): Int
+}
+
+
+import scala.reflect.ClassTag
+
+object matcher {
+  def mathch[NutType <% Nut : ClassTag, BoltType <% Bolt : ClassTag](nuts: IndexedSeq[NutType], bolts: IndexedSeq[BoltType]): IndexedSeq[(NutType,BoltType)] = {
+   
+   def inner(nnuts: Array[NutType],bbolts: Array[BoltType]): Array[(NutType,BoltType)] ={
+     if (nnuts.length == 1) Array((nnuts(0),bbolts(0)))
+     else if (nnuts.length==0) Array[(NutType,BoltType)]()
+     else{
+       var pivotnut = nnuts(0)
+       var arrangedbolts = bbolts.groupBy(pivotnut.compare(_)).withDefaultValue(Array[BoltType]())
+       var pivotbolt = arrangedbolts(0).head
+       var arrangednuts = nnuts.groupBy(pivotbolt.compare(_)).withDefaultValue(Array[NutType]())
+       inner(arrangednuts(-1),arrangedbolts(-1)) ++ arrangednuts(0).zip(arrangedbolts(0)) ++ inner(arrangednuts(1),arrangedbolts(1))
+   
+       
+     }
+     
+   }
+       
+   var bbolts = bolts.toArray
+   var nnuts = nuts.toArray
+   inner(nnuts, bbolts)
+  
+  }
+}

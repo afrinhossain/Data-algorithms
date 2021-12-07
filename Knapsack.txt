@@ -1,0 +1,102 @@
+case class Item(val weight: Int, val value: Int) {
+}
+package object knapsack {
+/**
+   * Given a maximum weight and a list of objects as (weight, value) pairs,
+   * find the highest-value subset of the items that weighs at most maxWeight.
+   * Uses dynamic programming and should be much better than the recursive
+   * search approach for instances with many items but
+   * relatively small maxWeight.
+   */
+  /*
+  def solveDynProg(maxWeight: Int, items: Seq[Item]): (Int, Seq[Item]) = {
+    // Check that all weights and values are positive
+    items.foreach({case Item(weight, value) => {
+      require(weight > 0)
+      require(value > 0)
+    }})
+    //greedy method = append the one with highest value/weight ratio
+    // this method doesn't work with the 0-1 case b/c flaw with the discretizaton
+     
+      var totweight = 0
+      var totvalue = 0
+      val ratioArr : Array[Double] = items.toArray.map(item => item.value.toDouble/item.weight.toDouble)
+      
+        
+      var itemArr : Array[(Item, Double)] = items.toArray.zip(ratioArr).sortBy(pair => -pair._2)
+      var finalArr = Array[Item]()
+      
+      val ssize = itemArr.length
+      var maxitem: Item = null 
+      var maxpair:(Item,Double) = null
+      var break = 0
+      var i = 0
+      
+      while(break == 0){
+        maxpair = itemArr(i)
+        maxitem = maxpair._1
+        
+        if(maxitem.weight + totweight <= maxWeight){
+          totweight += maxitem.weight
+          totvalue += maxitem.value
+          finalArr = finalArr :+ maxitem
+          itemArr(itemArr.indexOf(maxpair))= (new Item(0,0),0)
+        }
+        i += 1
+        if(i == ssize ) break = 1
+      }
+     
+     
+        
+      return(totvalue, finalArr.toSeq)
+    
+  }
+  * 
+  */
+   def solveDynProg(maxWeight: Int, items: Seq[Item]):(Int, Seq[Item]) = {
+    // Check that all weights and values are positive
+    items.foreach({case Item(weight, value) => {
+      require(weight > 0)
+      require(value > 0)
+    }})
+    
+   val ssize = items.size
+   val matrix = Array.tabulate[Int](ssize + 1,maxWeight + 1)({case (i,j) => -1})
+   val weights: Array[Int] =Array(0) ++ items.toArray.map(_.weight)
+   val values: Array[Int] =Array(0) ++ items.toArray.map(_.value)
+   
+   def inner(i:Int, j:Int): Int={
+      if (i == 0 | j <= 0)
+        return 0
+    
+      if (matrix(i-1)(j) == -1)      //m[i-1, j] has not been calculated, we have to call function m
+        matrix(i-1)(j) = inner(i-1,j)         
+  
+      if (weights(i) > j){                     //item cannot fit in the bag (THIS WAS MISSING FROM THE PREVIOUS ALGORITHM)
+        matrix(i)(j) = matrix(i-1)(j)
+      }else{
+        if (matrix(i-1)( j-weights(i)) == -1)   //m[i-1,j-w[i]] has not been calculated, we have to call function m
+            matrix(i-1)( j-weights(i)) = inner(i-1, j-weights(i))
+        matrix(i)( j) = matrix(i-1)(j).max(matrix(i-1)(j-weights(i)) + values(i))
+      }
+    return matrix(i)(j)
+    }
+  
+    val totvalue = inner(ssize,maxWeight)
+    var finalArr = Array[Item]()
+    var j = ssize
+    var remain = maxWeight
+    //composing finalArr
+    
+    while(j != 0){
+      if(matrix(j)(remain) != matrix(j-1)(remain)){ //check with the top bro
+        finalArr = finalArr :+ items(j-1)
+        remain -= items(j-1).weight
+      }
+      j -= 1
+    }
+    
+     
+    (totvalue,finalArr.toSeq)
+   }
+}

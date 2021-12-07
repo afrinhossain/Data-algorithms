@@ -1,0 +1,55 @@
+package object radixSort {
+  
+  def RadixSort(a: Array[Int]): Unit = {
+    var N = a.length
+    if(N <= 1) return
+    var sigI = 0 //sf track
+    var index = 0; 
+    var count = Array.fill[Int](256)(0); var temp =Array.fill[Int](N)(0)
+    var start = Array.fill[Int](256)(0)
+    
+
+    if (!(1 to N-1).forall(i => a(i) >= a(i-1))){
+      while(sigI <= 3){ 
+          
+          index= 0
+          while(index <= 255){
+            count(index) =0
+            start(index) = 0
+            index = index+1
+          }
+          
+          index = 0
+          while (index <= N-1){
+            var currentDig = (a(index) >> 8*sigI) & 255 
+            count(currentDig) = count(currentDig) + 1 
+            index = index + 1
+          }
+          
+          
+          index = 1
+          while(index <= 255){
+            start(index) = count(index-1)+ start(index-1)
+            index = index +1 
+          }
+          
+          index =0 
+          while(index <= N-1){
+            var currentDig = (a(index) >> 8*sigI ) & 255 
+            temp(start(currentDig)) = a(index)
+            start(currentDig) =start(currentDig) +  1 
+            index =index + 1
+          }
+          
+          index=0
+          while(index <= N-1){
+            a(index) = temp(index)
+            index = index+1
+          }
+          
+          sigI = sigI + 1 
+      }
+    }
+  } 
+  
+}

@@ -1,0 +1,41 @@
+
+  /*
+   * The classic recursive binary search
+   */
+  def search[A](data: IndexedSeq[A], e: A)(implicit ord: Ordering[A]): Boolean = {
+    def inner(from: Int, to: Int): Boolean = {
+      if(from <= to) {
+        val mid = from + (to - from) / 2
+        val cmp = ord.compare(e, data(mid))
+        if(cmp == 0) true                  
+        else if(cmp < 0) inner(from, mid-1)
+        else inner(mid+1, to)               
+      } else
+        false
+    }
+    inner(0, data.length-1)
+  }
+
+  /*Update binary search that performs only log2(n) comparisons
+ */
+  def searchLow[A](data: IndexedSeq[A], low: A)(implicit ord: Ordering[A]): Option[Int] = {
+
+    var ans: Option[Int] = None
+    var from = 0
+    var to = data.length-1
+    
+    while (from <= to) {
+      val mid = from + (to - from) / 2
+      val cmp = ord.compare(low, data(mid))
+      if(cmp > 0 ) {// low  > data(mid)
+        from = mid+1
+      }else{  //  low  < data(mid) || low  == data(mid)
+        ans= Some(mid)
+        to =mid-1 
+      }
+    } 
+
+    return ans
+  }
+
+
